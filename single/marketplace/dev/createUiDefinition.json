@@ -1,0 +1,144 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Compute.MultiVm",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "basics": [
+      {
+        "name": "vmName",
+        "type": "Microsoft.Common.TextBox",
+        "label": "VM Name",
+        "toolTip": "String used as a base for naming resources (6 alphanumeric characters or less).  A unique hash is prepended to the string for some resources, while resource-specific information is appended.",
+        "constraints": {
+          "required": true,
+          "regex": "^[a-z][a-z0-9-]{1,5}$",
+          "validationMessage": "Resource prefix must be between 2 and 6 characters long, must begin with a lowercase letter, and can contain only numbers and lowercase letters."
+        }
+      }, 
+      {
+        "name": "adminUsername",
+        "type": "Microsoft.Compute.UserNameTextBox",
+        "label": "VM user name",
+        "defaultValue": "stradmin",
+        "toolTip": "Admin username for all of the deployed virtual machines.",
+        "osPlatform": "Linux"
+      }, 
+      {
+        "name": "adminCredentials",
+        "type": "Microsoft.Compute.CredentialsCombo",
+        "label": {
+          "authenticationType": "Authentication type",
+          "password": "Password",
+          "confirmPassword": "Confirm password",
+          "sshPublicKey": "SSH public key"
+        },
+        "toolTip": {
+          "authenticationType": "",
+          "password": "VM password must be 12 characters and have 3 of the following: 1 lower case character, 1 upper case character, 1 number, and 1 special character.",
+          "sshPublicKey": ""
+        },
+        "constraints": {
+          "required": true
+        },
+        "options": {
+          "hideConfirmation": false
+        },
+        "osPlatform": "Linux"
+      },
+      {
+        "name": "ipAddressOrSubnet",
+        "type": "Microsoft.Common.TextBox",
+        "label": "Allowed IP address or subnet",
+        "defaultValue": "",
+        "toolTip": "Specify a single IP address or subnet.  Only connections originating from these IP addresses will be allowed to access endpoints in this deployment.",
+        "constraints": {
+          "required": true,
+          "regex": "^([0-9]{1,3}\\.)([0-9]{1,3}\\.)([0-9]{1,3}\\.)([0-9]{1,3})(\/[0-9]{1,2})?$",
+          "validationMessage": "Malformed IP address. Specify as x.x.x.x or x.x.x.x/y where x any number from 0 to 255 and y is any number from 1 to 32"
+        },
+        "visible": "[equals(basics('restrictAccess'), 1)]"
+      }
+    ],
+    "steps": [
+      {
+        "name": "vmSize",
+        "label": "Virtual machine size and performance",
+        "subLabel": {
+          "preValidation": "Define the size and performance of the virtual machine",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Virtual Machine Size and Performance",
+        "elements": [
+          {
+            "name": "vmStoragePerformance",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Storage performance",
+            "defaultValue": "Premium",
+            "toolTip": "Standard storage is backed by magnetic drives and provides the lowest cost per GB. Premium storage accounts are backed by solid state drives and offer consistent, low-latency performance. They can only be used with Azure virtual machine disks, and are best for I/O-intensive applications. This setting can't be changed after the storage account is created. [Learn more](https://azure.microsoft.com/documentation/articles/storage-introduction/#introducing-the-azure-storage-services)",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Standard",
+                  "value": "Standard"
+                },
+                {
+                  "label": "Premium",
+                  "value": "Premium"
+                }
+              ]
+            },
+            "visible": true
+          },
+          {
+            "name": "vmSizeHDD",
+            "type": "Microsoft.Compute.SizeSelector",
+            "label": "Virtual machine size",
+            "toolTip": "",
+            "recommendedSizes": [
+              "Standard_D3_v2",
+              "Standard_D4_v2"
+            ],
+            "constraints": {
+              "allowedSizes": [
+                "Standard_D3_v2",
+                "Standard_D4_v2"
+              ]
+            },
+            "osPlatform": "Linux",
+            "count": 1,
+            "visible": "[equals(steps('vmSize').vmStoragePerformance, 'Standard')]"
+          },
+          {
+            "name": "stratoApiVmSizeSSD",
+            "type": "Microsoft.Compute.SizeSelector",
+            "label": "Virtual machine size",
+            "toolTip": "",
+            "recommendedSizes": [
+              "Standard_DS3_v2",
+              "Standard_DS4_v2"
+            ],
+            "constraints": {
+              "allowedSizes": [
+                "Standard_DS3_v2",
+                "Standard_DS4_v2"
+              ]
+            },
+            "osPlatform": "Linux",
+            "count": 1,
+            "visible": "[equals(steps('vmSize').vmStoragePerformance, 'Premium')]"
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "vmName": "[basics('vmName')]",
+      "authType": "[basics('adminCredentials').authenticationType]",
+      "adminUsername": "[basics('adminUsername')]",
+      "adminPassword": "[basics('adminCredentials').password]",
+      "adminSSHKey": "[basics('adminCredentials').sshPublicKey]",
+      "vmStoragePerformance": "[steps('vmSize').vmStoragePerformance]",
+      "vmSize": "[coalesce(steps('vmSize').vmSizeHDD, steps('vmSize').vmSizeSSD)]",
+      "location": "[location()]"
+    }
+  }
+}
