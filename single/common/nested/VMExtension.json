@@ -42,7 +42,7 @@
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat('/bin/bash configure.sh \"', parameters('adminUsername'), '\" \"',parameters('artifactsLocationURL'), '\" \"', parameters('fqdn'), '\"')]"
+          "commandToExecute": "[concat('/bin/bash configure.sh \"', parameters('adminUsername'), '\" \"',parameters('artifactsLocationURL'), '\" \"', parameters('fqdn'), '\" \"',parameters('wavesNetworkName'), '\" \"',parameters('wavesNodeName'), '\" \"',parameters('wavesWalletSeed'), '\" \"',parameters('wavesWalletPassword'), '\" \"',parameters('wavesLogLevel'), '\" \"',parameters('wavesRestApiEnabled'), '\"')]"
         }
       }
     }

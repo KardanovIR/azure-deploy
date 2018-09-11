@@ -7,6 +7,18 @@ AZUREUSER=$1
 ARTIFACTS_URL_PREFIX=$2
 DNS_NAME=$3
 
+#############
+# Waves Parameters
+#############
+
+WAVES_NETWORK=$4
+WAVES_NODE_NAME=$5
+WAVES_WALLET_SEED=$6
+WAVES_WALLET_PASSWORD=$7
+WAVES_LOG_LEVEL=$8
+WAVES_REST_API_ENABLED=$9
+
+
 ###########
 # Constants
 ###########
@@ -46,4 +58,6 @@ sudo chmod +x /usr/local/bin/docker-compose
 #########################################
 # Install docker image from private repo
 #########################################
-sudo docker-compose up -d
+sudo mkdir /waves
+
+sudo docker run -dt -e WAVES_AUTODETECT_ADDRESS=yes -e WAVES_NETWORK=${WAVES_NETWORK} -e WAVES_NODE_NAME=${WAVES_NODE_NAME} -e WAVES_WALLET_SEED=${WAVES_WALLET_SEED} -e WAVES_WALLET_PASSWORD=${WAVES_WALLET_PASSWORD} -e WAVES_LOG_LEVEL=${WAVES_LOG_LEVEL} -e WAVES__REST_API__ENABLE=${WAVES_REST_API_ENABLED} -v /waves:/waves wavesplatform/node

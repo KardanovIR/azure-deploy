@@ -14,15 +14,15 @@
           "regex": "^[a-z][a-z0-9-]{1,5}$",
           "validationMessage": "Resource prefix must be between 2 and 6 characters long, must begin with a lowercase letter, and can contain only numbers and lowercase letters."
         }
-      }, 
+      },
       {
         "name": "adminUsername",
         "type": "Microsoft.Compute.UserNameTextBox",
         "label": "VM user name",
-        "defaultValue": "stradmin",
+        "defaultValue": "wavesadmin",
         "toolTip": "Admin username for all of the deployed virtual machines.",
         "osPlatform": "Linux"
-      }, 
+      },
       {
         "name": "adminCredentials",
         "type": "Microsoft.Compute.CredentialsCombo",
@@ -95,13 +95,13 @@
             "label": "Virtual machine size",
             "toolTip": "",
             "recommendedSizes": [
-              "Standard_D3_v2",
-              "Standard_D4_v2"
+              "Standard_D2_v3",
+              "Standard_D4_v3"
             ],
             "constraints": {
               "allowedSizes": [
-                "Standard_D3_v2",
-                "Standard_D4_v2"
+                "Standard_D2_v3",
+                "Standard_D4_v3"
               ]
             },
             "osPlatform": "Linux",
@@ -114,13 +114,13 @@
             "label": "Virtual machine size",
             "toolTip": "",
             "recommendedSizes": [
-              "Standard_DS3_v2",
-              "Standard_DS4_v2"
+              "Standard_D2_v3",
+              "Standard_D2_v3"
             ],
             "constraints": {
               "allowedSizes": [
-                "Standard_DS3_v2",
-                "Standard_DS4_v2"
+                "Standard_D2_v3",
+                "Standard_D2_v3"
               ]
             },
             "osPlatform": "Linux",
@@ -128,17 +128,170 @@
             "visible": "[equals(steps('vmSize').vmStoragePerformance, 'Premium')]"
           }
         ]
+      },
+      {
+        "name": "wavesConfigs",
+        "label": "Waves Node configuration",
+        "subLabel": {
+          "preValidation": "Set Waves node settings like network, log level, etc.",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Waves Node configuration",
+        "elements": [
+          {
+            "name": "wavesNetworkName",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Blockchain network",
+            "defaultValue": "MAINNET",
+            "toolTip": "",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "MAINNET",
+                  "value": "MAINNET"
+                },
+                {
+                  "label": "TESTNET",
+                  "value": "TESTNET"
+                }
+              ],
+              "required": true
+            },
+            "visible": true
+          },
+          {
+            "name": "wavesNodeName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Node name",
+            "defaultValue": "",
+            "toolTip": "Node name to send during handshake. Keep empty the field to set random node name.",
+            "constraints": {
+              "required": false
+            },
+            "visible": true
+          },
+          {
+            "name": "walletSettings",
+            "type": "Microsoft.Common.Section",
+            "label": "Wallet Settings",
+            "elements": [
+              {
+                "name": "wavesWalletSeed",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Seed Phrase",
+                  "confirmPassword": "Confirm Seed Phrase"
+                },
+                "defaultValue": null,
+                "toolTip": "If this field is empty a phrase will be generated automatically",
+                "constraints": {
+                  "required": false,
+                  "regex": "^.{32,1000}$",
+                  "validationMessage": "Seed phrase length should be between 32 and 1000"
+                },
+                "visible": true
+              },
+              {
+                "name": "wavesWalletPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Wallet Password",
+                  "confirmPassword": "Confirm password"
+                },
+                "defaultValue": null,
+                "toolTip": "If this field is empty a password will be generated automatically",
+                "constraints": {
+                  "required": false
+                },
+                "visible": true
+              }
+            ],
+            "visible": true
+          },
+          {
+            "name": "developmentSettings",
+            "type": "Microsoft.Common.Section",
+            "label": "Development Settings",
+            "elements": [
+              {
+                "name": "wavesLogLevel",
+                "type": "Microsoft.Common.DropDown",
+                "label": "Waves Node Log Level",
+                "defaultValue": "DEBUG",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "OFF",
+                      "value": "OFF"
+                    },
+                    {
+                      "label": "ERROR",
+                      "value": "ERROR"
+                    },
+                    {
+                      "label": "WARN",
+                      "value": "WARN"
+                    },
+                    {
+                      "label": "INFO",
+                      "value": "INFO"
+                    },
+                    {
+                      "label": "DEBUG",
+                      "value": "DEBUG"
+                    },
+                    {
+                      "label": "TRACE",
+                      "value": "TRACE"
+                    }
+                  ],
+                  "required": true
+                },
+                "visible": true
+              },
+              {
+                "name": "wavesRestApiEnabled",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Enable REST API for external connections ",
+                "defaultValue": "NO",
+                "toolTip": "",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "YES",
+                      "value": "YES"
+                    },
+                    {
+                      "label": "NO",
+                      "value": "NO"
+                    }
+                  ],
+                  "required": true
+                },
+                "visible": true
+              }
+            ]
+          }
+        ]
       }
     ],
     "outputs": {
       "vmName": "[basics('vmName')]",
+      "vmNetwork": "[basics('vmNetwork')]",
       "authType": "[basics('adminCredentials').authenticationType]",
       "adminUsername": "[basics('adminUsername')]",
       "adminPassword": "[basics('adminCredentials').password]",
       "adminSSHKey": "[basics('adminCredentials').sshPublicKey]",
       "vmStoragePerformance": "[steps('vmSize').vmStoragePerformance]",
       "vmSize": "[coalesce(steps('vmSize').vmSizeHDD, steps('vmSize').vmSizeSSD)]",
-      "location": "[location()]"
+      "location": "[location()]",
+
+      "wavesNetworkName": "[steps('wavesConfigs').wavesNetworkName]",
+      "wavesNodeName": "[steps('wavesConfigs').wavesNodeName]",
+      "wavesWalletSeed": "[steps('wavesConfigs').wavesWalletSeed]",
+      "wavesWalletPassword": "[steps('wavesConfigs').wavesWalletPassword]",
+      "wavesLogLevel": "[steps('wavesConfigs').wavesLogLevel]",
+      "wavesRestApiEnabled": "[steps('wavesConfigs').wavesRestApiEnabled]"
     }
   }
 }

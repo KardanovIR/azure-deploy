@@ -9,6 +9,63 @@
       },
       "maxLength": 12
     },
+    "wavesNetworkName": {
+      "type": "string",
+      "allowedValues": [
+        "MAINNET",
+        "TESTNET"
+      ],
+      "metadata": {
+        "description": "Network of the node"
+      }
+    },
+    "wavesNodeName": {
+      "type": "string",
+      "defaultValue": "Node name",
+      "metadata": {
+        "description": "Node name to send during handshake. Keep empty the field to set random node name."
+      },
+      "maxLength": 100
+    },
+    "wavesWalletSeed": {
+      "type": "string",
+      "defaultValue": null,
+      "metadata": {
+        "description": "If this field is empty a phrase will be generated automatically"
+      }
+    },
+    "wavesWalletPassword": {
+      "type": "string",
+      "defaultValue": null,
+      "metadata": {
+        "description": "If this field is empty a password will be generated automatically"
+      }
+    },
+    "wavesRestApiEnabled": {
+      "type": "string",
+      "allowedValues": [
+        "YES",
+        "NO"
+      ],
+      "metadata": {
+        "description": "Port number for the REST API"
+      }
+    },
+    "wavesLogLevel": {
+      "type": "string",
+      "defaultValue": "DEBUG",
+      "allowedValues": [
+        "OFF",
+        "ERROR",
+        "WARN",
+        "INFO",
+        "DEBUG",
+        "TRACE"
+      ],
+      "metadata": {
+        "description": "Set the logging level of node"
+      }
+    },
     "authType": {
       "type": "string",
       "allowedValues": [
@@ -21,7 +78,7 @@
     },
     "adminUsername": {
       "type": "string",
-      "defaultValue": "gethadmin",
+      "defaultValue": "wavesadmin",
       "metadata": {
         "description": "Administrator username of each deployed VM (alphanumeric characters only)"
       }
@@ -64,16 +121,13 @@
         "description": "Size of the virtual machine used for STRATO api nodes"
       }
     },
-    "location": {
-      "type": "string"
-    },
     "baseUrl": {
       "type": "string",
       "metadata": {
         "description": "The base URL for dependent assets",
         "artifactsBaseUrl": ""
       },
-      "defaultValue": ""
+      "defaultValue": "https://wavesdockertest.blob.core.windows.net/wavesdockerest"
     }
   },
   "variables": {
@@ -113,6 +167,8 @@
       "addressSpacePrefix": "10.1.0.0/20"
     },
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet').name)]",
+    "wavesSeedPhrase": "[coalesce(parameters('wavesWalletSeed'), concat('S', uniqueString(resourceGroup().id, subscription().subscriptionId), uniqueString(deployment().name), 'x', '!'))]",
+    "wavesWalletPassword": "[coalesce(parameters('wavesWalletPassword'), concat('El', uniqueString(subscription().subscriptionId, resourceGroup().id), 'ena', '$!'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/', variables('subnetName'))]"
   },
   "resources": [
@@ -120,7 +176,7 @@
       "apiVersion": "[variables('apiVersionPublicIPAddresses')]",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('publicIpAddressName')]",
-      "location": "[parameters('location')]",
+      "location": "[resourceGroup().location]",
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
@@ -132,7 +188,7 @@
       "apiVersion": "[variables('apiVersionNetworkInterfaces')]",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nicName')]",
-      "location": "[parameters('location')]",
+      "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Network/virtualNetworks/', variables('vNet').name)]",
         "[concat('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]",
@@ -162,7 +218,7 @@
       "apiVersion": "[variables('apiVersionNetworkSecurityGroups')]",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('nsgName')]",
-      "location": "[parameters('location')]",
+      "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "Network Security Group"
       },
@@ -203,7 +259,7 @@
       "apiVersion": "[variables('apiVersionVirtualNetworks')]",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vNet').name]",
-      "location": "[parameters('location')]",
+      "location": "[resourceGroup().location]",
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
@@ -262,7 +318,7 @@
             "value": "[variables('nameInfix')]"
           },
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[resourceGroup().location]"
           }
         }
       }
@@ -291,16 +347,13 @@
             "value": "[parameters('baseUrl')]"
           },
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[resourceGroup().location]"
           },
           "dnsName": {
             "value": "[variables('dnsName')]"
           },
           "fqdn": {
             "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('publicIpAddressName')), variables('apiVersionPublicIPAddresses')).dnsSettings.fqdn]"
-          },
-          "stratoPassword": {
-            "value": "[parameters('stratoPassword')]"
           }
         }
       }
@@ -310,6 +363,14 @@
     "dnsName": {
       "type": "string",
       "value": "[reference(variables('publicIpAddressName')).dnsSettings.fqdn]"
-    } 
+    },
+    "wavesSeedPhrase": {
+      "type": "string",
+      "value": "[variables('wavesSeedPhrase')]"
+    },
+    "wavesWalletPassword": {
+      "type": "string",
+      "value": "[variables('wavesWalletPassword')]"
+    }
   }
 }
