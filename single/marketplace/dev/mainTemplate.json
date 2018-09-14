@@ -7,7 +7,7 @@
       "metadata": {
         "description": "String used as the name for the virtual machine"
       },
-      "maxLength": 12
+      "maxLength": 15
     },
     "authType": {
       "type": "string",
@@ -21,7 +21,6 @@
     },
     "adminUsername": {
       "type": "string",
-      "defaultValue": "gethadmin",
       "metadata": {
         "description": "Administrator username of each deployed VM (alphanumeric characters only)"
       }
@@ -48,48 +47,65 @@
         "Premium"
       ],
       "metadata": {
-        "description": "Storage performance level for STRATO api virtual machines"
+        "description": "Storage performance level for virtual machines"
       }
     },
     "vmSize": {
       "type": "string",
-      "defaultValue": "Standard_DS3_v2",
-      "allowedValues": [
-        "Standard_D3_v2",
-        "Standard_D4_v2",
-        "Standard_DS3_v2",
-        "Standard_DS4_v2"
-      ],
+      "defaultValue": "Standard_D4s_v3",
       "metadata": {
-        "description": "Size of the virtual machine used for STRATO api nodes"
+        "description": "Size of the virtual machine used for nodes"
       }
     },
     "location": {
-      "type": "string"
-    },
-    "baseUrl": {
       "type": "string",
       "metadata": {
-        "description": "The base URL for dependent assets",
-        "artifactsBaseUrl": ""
+        "description": "Location/region to deploy the gochain assets"
+      }
+    },
+    "walletPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Wallet password that will be used when creating the wallet."
+      }
+    },
+    "networkType": {
+      "type": "string",
+      "defaultValue": "testnet",
+      "allowedValues": [
+        "testnet",
+        "mainnet"
+      ],
+      "metadata": {
+        "description": "Network type that the node will be provisioned to."
+      }
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "The base URI where artifacts required by this template are located including a trailing '/'"
+      },
+      "defaultValue": "[deployment().properties.templateLink.uri]"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."
       },
       "defaultValue": ""
     }
   },
   "variables": {
-    "apiVersionDeployments": "2016-09-01",
-    "apiVersionPublicIPAddresses": "2016-09-01",
-    "apiVersionAvailabilitySets": "2017-03-30",
-    "apiVersionNetworkSecurityGroups": "2016-09-01",
-    "apiVersionNetworkInterfaces": "2016-09-01",
-    "apiVersionVirtualMachines": "2017-03-30",
-    "apiVersionVirtualNetworks": "2016-09-01",
-    "apiVersionStorageAccounts": "2016-01-01",
+    "apiVersionDeployments": "2017-05-10",
+    "apiVersionPublicIPAddresses": "2017-10-01",
+    "apiVersionNetworkSecurityGroups": "2017-10-01",
+    "apiVersionNetworkInterfaces": "2017-10-01",
+    "apiVersionVirtualNetworks": "2017-10-01",
+    "apiVersionStorageAccounts": "2018-02-01",
     "nameInfix": "[toLower(substring(concat(parameters('vmName'), uniqueString(resourceGroup().id)), 0, 9))]",
-    "dnsName": "[if(equals(parameters('authType'), 'password'), concat(variables('nameInfix'),'p'), concat(variables('nameInfix'),'s'))]",
-    "webPort": 80,
+    "dnsName": "[variables('nameInfix')]",
     "sshPort": 22,
-    "subnetName": "[uniqueString(concat(resourceGroup().id, concat(variables('nameInfix'), 'subnet')))]",
+    "subnetName": "[concat(variables('nameInfix'), 'subnet')]",
     "subnetPrefix": "10.1.0.0/24",
     "nsgName": "[concat(variables('nameInfix'), '-nsg')]",
     "nicName": "[concat(variables('nameInfix'), '-nic')]",
@@ -105,15 +121,15 @@
     "ubuntuImage": {
       "publisher": "Canonical",
       "offer": "UbuntuServer",
-      "sku": "16.04.0-LTS",
+      "sku": "18.04-LTS",
       "version": "latest"
     },
     "vNet": {
       "name": "[concat(variables('nameInfix'), '-vnet')]",
       "addressSpacePrefix": "10.1.0.0/20"
     },
-    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('vNet').name)]",
-    "subnetRef": "[concat(variables('vnetID'),'/subnets/', variables('subnetName'))]"
+    "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNet').name, variables('subnetName'))]",
+    "adminPasswordOrSSHKey": "[if(equals(parameters('authType'), 'password'), parameters('adminPassword'), parameters('adminSSHKey'))]"
   },
   "resources": [
     {
@@ -181,20 +197,6 @@
               "priority": 100,
               "direction": "Inbound"
             }
-          },
-          {
-            "name": "allow-web",
-            "properties": {
-              "description": "Allow smd and public access to web",
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "destinationPortRange": "[variables('webPort')]",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "priority": 102,
-              "direction": "Inbound"
-            }
           }
         ]
       }
@@ -224,15 +226,12 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('baseUrl'), '/nested/VM.json')]",
+          "uri": "[uri(parameters('_artifactsLocation'), concat('nested/VM.json', parameters('_artifactsLocationSasToken')))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
           "authType": {
             "value": "[parameters('authType')]"
-          },
-          "apiVersionVirtualMachines": {
-            "value": "[variables('apiVersionVirtualMachines')]"
           },
           "storagePerformance": {
             "value": "[parameters('vmStoragePerformance')]"
@@ -246,11 +245,8 @@
           "adminUsername": {
             "value": "[parameters('adminUsername')]"
           },
-          "adminPassword": {
-            "value": "[parameters('adminPassword')]"
-          },
-          "adminSSHKey": {
-            "value": "[parameters('adminSSHKey')]"
+          "adminPasswordOrKey": {
+            "value": "[variables('adminPasswordOrSSHKey')]"
           },
           "ubuntuImage": {
             "value": "[variables('ubuntuImage')]"
@@ -277,7 +273,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(parameters('baseUrl'), '/nested/VMExtension.json')]",
+          "uri": "[uri(parameters('_artifactsLocation'), concat('nested/VMExtension.json', parameters('_artifactsLocationSasToken')))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -288,8 +284,11 @@
             "value": "[parameters('adminUsername')]"
           },
           "artifactsLocationURL": {
-            "value": "[parameters('baseUrl')]"
+            "value": "[parameters('_artifactsLocation')]"
           },
+          "artifactsLocationUrlSasToken": {
+            "value": "[parameters('_artifactsLocationSasToken')]"
+          },                 
           "location": {
             "value": "[parameters('location')]"
           },
@@ -299,8 +298,11 @@
           "fqdn": {
             "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('publicIpAddressName')), variables('apiVersionPublicIPAddresses')).dnsSettings.fqdn]"
           },
-          "stratoPassword": {
-            "value": "[parameters('stratoPassword')]"
+          "walletPassword": {
+            "value": "[parameters('walletPassword')]"
+          },
+          "networkType": {
+            "value": "[parameters('networkType')]"
           }
         }
       }

@@ -8,7 +8,10 @@
     "adminUsername": {
       "type": "string"
     },
-    "artifactsLocationURL": {
+    "artifactsLocationUrl": {
+      "type": "string"
+    },
+    "artifactsLocationUrlSasToken": {
       "type": "string"
     },
     "location": {
@@ -19,10 +22,16 @@
     },
     "fqdn": {
       "type": "string"
+    },
+    "walletPassword": {
+      "type": "securestring"
+    },
+    "networkType": {
+      "type": "string"
     }
   },
   "variables": {
-    "apiVersionVirtualMachinesExtensions": "2016-03-30",
+    "apiVersionVirtualMachinesExtensions": "2018-06-01",
     "dockerfile": "docker-compose.yml"
   },
   "resources": [
@@ -38,11 +47,11 @@
         "autoUpgradeMinorVersion": true,
         "settings": {
           "fileUris": [
-            "[concat(parameters('artifactsLocationURL'), '/scripts/configure.sh')]"
+            "[uri(parameters('artifactsLocationUrl'), concat('scripts/configure.sh', parameters('artifactsLocationUrlSasToken')))]"
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat('/bin/bash configure.sh \"', parameters('adminUsername'), '\" \"',parameters('artifactsLocationURL'), '\" \"', parameters('fqdn'), '\"')]"
+          "commandToExecute": "[concat('/bin/bash configure.sh \"', parameters('adminUsername'), '\" \"',parameters('artifactsLocationUrl'), '\" \"', parameters('artifactsLocationUrlSasToken'), '\" \"', parameters('fqdn'), '\" \"', parameters('walletPassword'), '\" \"', parameters('networkType'), '\"')]"
         }
       }
     }
