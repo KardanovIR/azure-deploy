@@ -104,6 +104,74 @@
             "count": 1
           }
         ]
+      },
+      {
+        "name": "settings",
+        "label": "Settings",
+        "subLabel": {
+          "preValidation": "Waves configuration",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Settings",
+        "elements": [
+          {
+            "name": "walletSection",
+            "type": "Microsoft.Common.Section",
+            "label": "Wallet password",
+            "elements": [
+              {
+                "name": "walletPassword",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "Wallet password must be more than 2 and less than 15 characters and have 3 of the following: 1 lower case character, 1 upper case character, 1 number, and 1 special character.",
+                "constraints": {
+                  "required": true,
+                  "regex": "^[a-z][a-z0-9-]{2,14}$",
+                  "validationMessage": "Please enter a valid password that meets the minimum requirements."
+                },
+                "options": {
+                  "hideConfirmation": false
+                }
+              }
+            ]
+          },
+          {
+            "name": "settingsBlock",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "text": "________________________________________________"
+            }
+          },
+          {
+            "name": "networkSection",
+            "type": "Microsoft.Common.Section",
+            "label": "Network",
+            "elements": [
+              {
+                "name": "networkType",
+                "type": "Microsoft.Common.OptionsGroup", 
+                "label": "Waves network",
+                "toolTip": "Select the desired Waves public network, either MAINNET or TESTNET",
+                "defaultValue": "testnet",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "testnet",
+                      "value": "testnet"
+                    },
+                    {
+                      "label": "mainnet",
+                      "value": "mainnet"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
       }
     ],
     "outputs": {
@@ -114,7 +182,9 @@
       "adminSSHKey": "[basics('adminCredentials').sshPublicKey]",
       "vmStoragePerformance": "[basics('vmstorageperf')]",
       "vmSize": "[steps('size').vmSize]",
-      "location": "[location()]"
+      "location": "[location()]",
+      "walletPassword": "[steps('settings').walletSection.walletPassword]",
+      "networkType": "[steps('settings').networkSection.networkType]"
     }
   }
 }
