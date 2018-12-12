@@ -41,7 +41,7 @@
         "autoUpgradeMinorVersion": true,
         "settings": {
           "fileUris": [
-            "[uri(parameters('artifactsLocationUrl'), concat('scripts/configure.sh', parameters('artifactsLocationUrlSasToken')))]"
+            "[uri(parameters('artifactsLocationUrl'), concat('configure.sh', parameters('artifactsLocationUrlSasToken')))]"
           ]
         },
         "protectedSettings": {

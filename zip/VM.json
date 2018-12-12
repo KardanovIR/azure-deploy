@@ -74,9 +74,6 @@
         "description": "DNS name (prefix) of the Virtual Machine."
       }
     },
-    "wavesVersion": {
-      "type": "string"
-    },
     "wavesNetworkName": {
       "type": "string",
       "defaultValue": "MAINNET",

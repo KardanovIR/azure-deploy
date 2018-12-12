@@ -138,6 +138,7 @@
   },
   "variables": {
     "apiVersionDeployments": "2017-05-10",
+    "apiVersionVirtualMachines": "2017-03-30",
     "apiVersionPublicIPAddresses": "2017-10-01",
     "apiVersionNetworkSecurityGroups": "2017-10-01",
     "apiVersionNetworkInterfaces": "2017-10-01",
@@ -281,15 +282,12 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[uri(parameters('_artifactsLocation'), concat('nested/VM.json', parameters('_artifactsLocationSasToken')))]",
+          "uri": "[uri(parameters('_artifactsLocation'), concat('VM.json', parameters('_artifactsLocationSasToken')))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
           "authType": {
             "value": "[parameters('authType')]"
-          },
-          "apiVersionVirtualMachines": {
-            "value": "[variables('apiVersionVirtualMachines')]"
           },
           "apiVersionVirtualMachines": {
             "value": "[variables('apiVersionVirtualMachines')]"
@@ -337,7 +335,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[uri(parameters('_artifactsLocation'), concat('nested/VMExtension.json', parameters('_artifactsLocationSasToken')))]",
+          "uri": "[uri(parameters('_artifactsLocation'), concat('VMExtension.json', parameters('_artifactsLocationSasToken')))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
