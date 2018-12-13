@@ -22,6 +22,46 @@
     },
     "fqdn": {
       "type": "string"
+    },
+    "wavesNetworkName": {
+      "type": "string",
+      "defaultValue": "MAINNET",
+      "allowedValues": [
+        "MAINNET",
+        "TESTNET"
+      ]
+    },
+    "wavesNodeName": {
+      "type": "string",
+      "defaultValue": null
+    },
+    "wavesWalletSeed": {
+      "type": "string",
+      "defaultValue": null
+    },
+    "wavesWalletPassword": {
+      "type": "string",
+      "defaultValue": null
+    },
+    "wavesLogLevel": {
+      "type": "string",
+      "defaultValue": "DEBUG",
+      "allowedValues": [
+        "OFF",
+        "ERROR",
+        "WARN",
+        "INFO",
+        "DEBUG",
+        "TRACE"
+      ]
+    },
+    "wavesRestApiEnabled": {
+      "type": "string",
+      "defaultValue": "NO",
+      "allowedValues": [
+        "YES",
+        "NO"
+      ]
     }
   },
   "variables": {

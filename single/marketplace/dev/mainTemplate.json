@@ -111,7 +111,7 @@
     "vmSize": {
       "type": "string",
       "defaultValue": "Standard_D4s_v3",
-      "metadata": {
+      "metadata": {f
         "description": "Size of the virtual machine"
       }
     },
@@ -171,6 +171,7 @@
       "addressSpacePrefix": "10.1.0.0/20"
     },
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNet').name, variables('subnetName'))]",
+    "adminPasswordOrKey": "[if(equals(parameters('authType'), 'password'), parameters('adminPassword'), parameters('adminSSHKey'))]",
     "wavesSeedPhrase": "[coalesce(parameters('wavesWalletSeed'), concat('S', uniqueString(resourceGroup().id, subscription().subscriptionId), uniqueString(deployment().name), 'x', '!'))]",
     "wavesWalletPassword": "[coalesce(parameters('wavesWalletPassword'), concat('El', uniqueString(subscription().subscriptionId, resourceGroup().id), 'ena', '$!'))]"
   },
@@ -304,6 +305,9 @@
           "adminUsername": {
             "value": "[parameters('adminUsername')]"
           },
+          "adminPasswordOrKey": {
+            "value": "[variables('adminPasswordOrKey')]"
+          },
           "adminPassword": {
             "value": "[parameters('adminPassword')]"
           },
@@ -361,10 +365,10 @@
             "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('publicIpAddressName')), variables('apiVersionPublicIPAddresses')).dnsSettings.fqdn]"
           },
           "walletPassword": {
-            "value": "[parameters('walletPassword')]"
+            "value": "[parameters('wavesWalletPassword')]"
           },
           "networkType": {
-            "value": "[parameters('networkType')]"
+            "value": "[parameters('wavesNetworkName')]"
           }
         }
       }
@@ -377,11 +381,11 @@
     },
     "wavesSeedPhrase": {
       "type": "string",
-      "value": "[variables('wavesSeedPhrase')]"
+      "value": "[parameters('wavesWalletSeed')]"
     },
     "wavesWalletPassword": {
       "type": "string",
-      "value": "[variables('wavesWalletPassword')]"
+      "value": "[parameters('wavesWalletPassword')]"
     }
   }
 }

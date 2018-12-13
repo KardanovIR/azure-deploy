@@ -154,7 +154,6 @@
               "password": "Seed Phrase",
               "confirmPassword": "Confirm Seed Phrase"
             },
-            "defaultValue": null,
             "toolTip": "If this field is empty a phrase will be generated automatically",
             "constraints": {
               "required": false,
@@ -170,7 +169,6 @@
               "password": "Wallet Password",
               "confirmPassword": "Confirm password"
             },
-            "defaultValue": null,
             "toolTip": "If this field is empty a password will be generated automatically",
             "constraints": {
               "required": false
@@ -246,7 +244,6 @@
       "vmStoragePerformance": "[basics('vmstorageperf')]",
       "vmSize": "[steps('Size').vmSize]",
       "location": "[location()]",
-
       "wavesNetworkName": "[steps('wavesConfigs').wavesNetworkName]",
       "wavesNodeName": "[steps('wavesConfigs').wavesNodeName]",
       "wavesWalletSeed": "[steps('wavesConfigs').wavesWalletSeed]",

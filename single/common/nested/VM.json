@@ -12,7 +12,6 @@
       "metadata": {
         "description": "Type of authentication to use on the Virtual Machine."
       }
-
     },
     "apiVersionVirtualMachines": {
       "type": "string"
@@ -41,7 +40,7 @@
         "description": "User name for the Virtual Machine."
       }
     },
-    "adminPassword": {
+    "adminPasswordOrKey": {
       "type": "securestring",
       "metadata": {
         "description": "Password or ssh key for the Virtual Machine"
@@ -139,7 +138,7 @@
         "osProfile": {
           "computerName": "[parameters('dnsName')]",
           "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]",
+          "adminPassword": "[parameters('adminPasswordOrKey')]",
           "linuxConfiguration": "[if(equals(parameters('authType'), 'password'), json('null'), variables('linuxConfiguration'))]"
         },
         "storageProfile": {
