@@ -7,7 +7,7 @@
       {
         "name": "name",
         "type": "Microsoft.Common.TextBox",
-        "label": "Name",
+        "label": "VM Name",
         "toolTip": "Name of the virtual machine to that will be provisioned.  This should be less than 15 characters in length.",
         "constraints": {
           "required": true,
@@ -37,7 +37,8 @@
       {
         "name": "username",
         "type": "Microsoft.Compute.UserNameTextBox",
-        "label": "Username",
+        "label": "VM user name",
+        "defaultValue": "wavesadmin",
         "toolTip": "Admin username for all of the deployed virtual machines.",
         "osPlatform": "Linux",
         "constraints": {
@@ -45,7 +46,7 @@
           "regex": "^[a-z][a-z0-9-]{1,15}$",
           "validationMessage": "Name should be between 1 and 15 characters in length"
         }
-      }, 
+      },
       {
         "name": "adminCredentials",
         "type": "Microsoft.Compute.CredentialsCombo",
@@ -71,13 +72,13 @@
     ],
     "steps": [
       {
-        "name": "size",
-        "label": "Size",
+        "name": "Size",
+        "label": "Virtual machine size and performance",
         "subLabel": {
           "preValidation": "Choose virtual machine size",
           "postValidation": "Done"
         },
-        "bladeTitle": "Size",
+        "bladeTitle": "Virtual Machine Size and Performance",
         "elements": [
           {
             "name": "vmSize",
@@ -106,68 +107,368 @@
         ]
       },
       {
-        "name": "settings",
-        "label": "Settings",
+        "name": "wavesConfigs",
+        "label": "Waves Node configuration",
         "subLabel": {
-          "preValidation": "Waves configuration",
+          "preValidation": "Set Waves node settings like network, log level, etc.",
           "postValidation": "Done"
         },
-        "bladeTitle": "Settings",
+        "bladeTitle": "Waves Node configuration",
         "elements": [
           {
-            "name": "walletSection",
-            "type": "Microsoft.Common.Section",
-            "label": "Wallet password",
-            "elements": [
-              {
-                "name": "walletPassword",
-                "type": "Microsoft.Common.PasswordBox",
-                "label": {
-                  "password": "Password",
-                  "confirmPassword": "Confirm password"
+            "name": "wavesNetworkName",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Blockchain network",
+            "defaultValue": "MAINNET",
+            "toolTip": "",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "MAINNET",
+                  "value": "MAINNET"
                 },
-                "toolTip": "Wallet password must be more than 2 and less than 15 characters and have 3 of the following: 1 lower case character, 1 upper case character, 1 number, and 1 special character.",
-                "constraints": {
-                  "required": true,
-                  "regex": "^[a-z][a-z0-9-]{2,14}$",
-                  "validationMessage": "Please enter a valid password that meets the minimum requirements."
-                },
-                "options": {
-                  "hideConfirmation": false
+                {
+                  "label": "TESTNET",
+                  "value": "TESTNET"
                 }
-              }
-            ]
+              ],
+              "required": true
+            },
+            "visible": true
           },
           {
-            "name": "settingsBlock",
-            "type": "Microsoft.Common.TextBlock",
-            "options": {
-              "text": "________________________________________________"
+            "name": "wavesNodeCount",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Number of nodes to deploy",
+            "toolTip": "Enter the number of nodes to deploy (containers).",
+            "defaultValue": "1",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "1",
+                  "value": 1
+                },
+                {
+                  "label": "2",
+                  "value": 2
+                },
+                {
+                  "label": "3",
+                  "value": 3
+                },
+                {
+                  "label": "4",
+                  "value": 4
+                },
+                {
+                  "label": "5",
+                  "value": 5
+                }
+              ]
             }
           },
           {
-            "name": "networkSection",
+            "name": "wavesNodePrefix",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Prefix for node",
+            "defaultValue": "",
+            "toolTip": "Prefix of the node name.  The node will append a number that will designate the number of node.",
+            "constraints": {
+              "regex": "^[a-z][a-z0-9-]{1,5}$",
+              "required": true,
+              "validationMessage": "Please enter an alpanumeric string that is less than 6 characters in length."
+            },
+            "visible": true
+          },
+          {
+            "name": "node1HeaderLine",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "text": "_______________________________________________"
+            },
+            "visible": true
+          },
+          {
+            "name": "walletSettings1",
             "type": "Microsoft.Common.Section",
-            "label": "Network",
+            "label": "Node 1 Wallet Settings",
             "elements": [
               {
-                "name": "networkType",
-                "type": "Microsoft.Common.OptionsGroup", 
-                "label": "Waves network",
-                "toolTip": "Select the desired Waves public network, either MAINNET or TESTNET",
-                "defaultValue": "testnet",
+                "name": "wavesWalletSeed1",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Seed Phrase",
+                  "confirmPassword": "Confirm Seed Phrase"
+                },
+                "toolTip": "If this field is empty a phrase will be generated automatically",
+                "constraints": {
+                  "required": false,
+                  "regex": "^.{32,1000}$",
+                  "validationMessage": "Seed phrase length should be between 32 and 1000"
+                },
+                "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 0)]"
+              },
+              {
+                "name": "wavesWalletPassword1",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Wallet Password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "If this field is empty a password will be generated automatically",
+                "constraints": {
+                  "required": false
+                },
+                "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 0)]"
+              }
+            ],
+            "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 0)]"
+          },
+          {
+            "name": "node2HeaderLine",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "text": "_______________________________________________"
+            },
+            "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 1)]"
+          },
+          {
+            "name": "walletSettings2",
+            "type": "Microsoft.Common.Section",
+            "label": "Node 2 Wallet Settings",
+            "elements": [
+              {
+                "name": "wavesWalletSeed2",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Seed Phrase",
+                  "confirmPassword": "Confirm Seed Phrase"
+                },
+                "toolTip": "If this field is empty a phrase will be generated automatically",
+                "constraints": {
+                  "required": false,
+                  "regex": "^.{32,1000}$",
+                  "validationMessage": "Seed phrase length should be between 32 and 1000"
+                },
+                "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 1)]"
+              },
+              {
+                "name": "wavesWalletPassword2",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Wallet Password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "If this field is empty a password will be generated automatically",
+                "constraints": {
+                  "required": false
+                },
+                "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 1)]"
+              }
+            ],
+            "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 1)]"
+          },
+          {
+            "name": "node3HeaderLine",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "text": "_______________________________________________"
+            },
+            "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 2)]"
+          },
+          {
+            "name": "walletSettings3",
+            "type": "Microsoft.Common.Section",
+            "label": "Node 3 Wallet Settings",
+            "elements": [
+              {
+                "name": "wavesWalletSeed3",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Seed Phrase",
+                  "confirmPassword": "Confirm Seed Phrase"
+                },
+                "toolTip": "If this field is empty a phrase will be generated automatically",
+                "constraints": {
+                  "required": false,
+                  "regex": "^.{32,1000}$",
+                  "validationMessage": "Seed phrase length should be between 32 and 1000"
+                },
+                "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 2)]"
+              },
+              {
+                "name": "wavesWalletPassword3",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Wallet Password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "If this field is empty a password will be generated automatically",
+                "constraints": {
+                  "required": false
+                },
+                "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 2)]"
+              }
+            ],
+            "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 2)]"
+          },
+          {
+            "name": "node4HeaderLine",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "text": "_______________________________________________"
+            },
+            "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 3)]"
+          },
+          {
+            "name": "walletSettings4",
+            "type": "Microsoft.Common.Section",
+            "label": "Node 4 Wallet Settings",
+            "elements": [
+              {
+                "name": "wavesWalletSeed4",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Seed Phrase",
+                  "confirmPassword": "Confirm Seed Phrase"
+                },
+                "toolTip": "If this field is empty a phrase will be generated automatically",
+                "constraints": {
+                  "required": false,
+                  "regex": "^.{32,1000}$",
+                  "validationMessage": "Seed phrase length should be between 32 and 1000"
+                },
+                "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 3)]"
+              },
+              {
+                "name": "wavesWalletPassword4",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Wallet Password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "If this field is empty a password will be generated automatically",
+                "constraints": {
+                  "required": false
+                },
+                "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 3)]"
+              }
+            ],
+            "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 3)]"
+          },
+          {
+            "name": "node5HeaderLine",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "text": "_______________________________________________"
+            },
+            "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 4)]"
+          },
+          {
+            "name": "walletSettings5",
+            "type": "Microsoft.Common.Section",
+            "label": "Node 5 Wallet Settings",
+            "elements": [
+              {
+                "name": "wavesWalletSeed5",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Seed Phrase",
+                  "confirmPassword": "Confirm Seed Phrase"
+                },
+                "toolTip": "If this field is empty a phrase will be generated automatically",
+                "constraints": {
+                  "required": false,
+                  "regex": "^.{32,1000}$",
+                  "validationMessage": "Seed phrase length should be between 32 and 1000"
+                },
+                "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 4)]"
+              },
+              {
+                "name": "wavesWalletPassword5",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Wallet Password",
+                  "confirmPassword": "Confirm password"
+                },
+                "toolTip": "If this field is empty a password will be generated automatically",
+                "constraints": {
+                  "required": false
+                },
+                "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 4)]"
+              }
+            ],
+            "visible": "[greater(steps('wavesConfigs').wavesNodeCount, 4)]"
+          },
+          {
+            "name": "devSettingsHeaderLine",
+            "type": "Microsoft.Common.TextBlock",
+            "options": {
+              "text": "_______________________________________________"
+            },
+            "visible": true
+          },
+          {
+            "name": "developmentSettings",
+            "type": "Microsoft.Common.Section",
+            "label": "Development Settings",
+            "elements": [
+              {
+                "name": "wavesLogLevel",
+                "type": "Microsoft.Common.DropDown",
+                "label": "Waves Node Log Level",
+                "defaultValue": "DEBUG",
                 "constraints": {
                   "allowedValues": [
                     {
-                      "label": "testnet",
-                      "value": "testnet"
+                      "label": "OFF",
+                      "value": "OFF"
                     },
                     {
-                      "label": "mainnet",
-                      "value": "mainnet"
+                      "label": "ERROR",
+                      "value": "ERROR"
+                    },
+                    {
+                      "label": "WARN",
+                      "value": "WARN"
+                    },
+                    {
+                      "label": "INFO",
+                      "value": "INFO"
+                    },
+                    {
+                      "label": "DEBUG",
+                      "value": "DEBUG"
+                    },
+                    {
+                      "label": "TRACE",
+                      "value": "TRACE"
                     }
-                  ]
-                }
+                  ],
+                  "required": true
+                },
+                "visible": true
+              },
+              {
+                "name": "wavesRestApiEnabled",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Enable REST API for external connections ",
+                "defaultValue": "NO",
+                "toolTip": "",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "YES",
+                      "value": "YES"
+                    },
+                    {
+                      "label": "NO",
+                      "value": "NO"
+                    }
+                  ],
+                  "required": true
+                },
+                "visible": true
               }
             ]
           }
@@ -181,10 +482,14 @@
       "adminPassword": "[basics('adminCredentials').password]",
       "adminSSHKey": "[basics('adminCredentials').sshPublicKey]",
       "vmStoragePerformance": "[basics('vmstorageperf')]",
-      "vmSize": "[steps('size').vmSize]",
+      "vmSize": "[steps('Size').vmSize]",
       "location": "[location()]",
-      "walletPassword": "[steps('settings').walletSection.walletPassword]",
-      "networkType": "[steps('settings').networkSection.networkType]"
+      "wavesNetworkName": "[steps('wavesConfigs').wavesNetworkName]",
+      "wavesNodeName": "[steps('wavesConfigs').wavesNodeName]",
+      "wavesWalletSeed": "[steps('wavesConfigs').wavesWalletSeed]",
+      "wavesWalletPassword": "[steps('wavesConfigs').wavesWalletPassword]",
+      "wavesLogLevel": "[steps('wavesConfigs').wavesLogLevel]",
+      "wavesRestApiEnabled": "[steps('wavesConfigs').wavesRestApiEnabled]"
     }
   }
 }
