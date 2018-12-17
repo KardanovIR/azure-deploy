@@ -12,21 +12,17 @@
       "metadata": {
         "description": "Type of authentication to use on the Virtual Machine."
       }
-
     },
-    "apiVersionVirtualMachines": {
-      "type": "string"
-    },
-    "storagePerformance": {
+    "adminUsername": {
       "type": "string",
       "metadata": {
-        "description": "Storage performance level for the Virtual Machine."
+        "description": "User name for the Virtual Machine."
       }
     },
-    "nicName": {
-      "type": "string",
+    "adminPasswordOrKey": {
+      "type": "securestring",
       "metadata": {
-        "description": "Network interface card name for the Virtual Machine."
+        "description": "Password or ssh key for the Virtual Machine"
       }
     },
     "vmSize": {
@@ -35,20 +31,17 @@
         "description": "Size of the Virtual Machine."
       }
     },
-    "adminUsername": {
+    "storagePerformance": {
       "type": "string",
       "metadata": {
-        "description": "User name for the Virtual Machine."
+        "description": "Storage performance level for the Virtual Machine."
       }
     },
-    "adminPassword": {
-      "type": "securestring",
+    "subnetRef": {
+      "type": "string",
       "metadata": {
-        "description": "Password or ssh key for the Virtual Machine"
+        "description": "Reference to the subnet that the network interface will be joined to."
       }
-    },
-    "adminSSHKey": {
-      "type": "string"
     },
     "ubuntuImage": {
       "type": "object",
@@ -62,6 +55,12 @@
         "description": "DNS name (prefix) of the Virtual Machine."
       }
     },
+    "nsgName": {
+      "type": "string",
+      "metadata": {
+        "description": "Network security group for the nic/vm."
+      }
+    },
     "nameInfix": {
       "type": "string",
       "metadata": {
@@ -73,46 +72,11 @@
       "metadata": {
         "description": "DNS name (prefix) of the Virtual Machine."
       }
-    },
-    "wavesNetworkName": {
-      "type": "string",
-      "defaultValue": "MAINNET",
-      "allowedValues": [
-        "MAINNET",
-        "TESTNET"
-      ]
-    },
-    "wavesWalletSeed": {
-      "type": "string",
-      "defaultValue": null
-    },
-    "wavesWalletPassword": {
-      "type": "string",
-      "defaultValue": null
-    },
-    "wavesLogLevel": {
-      "type": "string",
-      "defaultValue": "DEBUG",
-      "allowedValues": [
-        "OFF",
-        "ERROR",
-        "WARN",
-        "INFO",
-        "DEBUG",
-        "TRACE"
-      ]
-    },
-    "wavesRestApiEnabled": {
-      "type": "string",
-      "defaultValue": "NO",
-      "allowedValues": [
-        "YES",
-        "NO"
-      ]
     }
   },
   "variables": {
     "apiVersionVirtualMachine": "2018-06-01",
+    "apiVersionNetworkInterfaces": "2018-08-01",
     "sshKeyPath": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
     "linuxConfiguration": {
       "disablePasswordAuthentication": true,
@@ -124,14 +88,44 @@
           }
         ]
       }
-    }
+    },
+    "publicIpAddressName": "[concat(parameters('nameInfix'), '-pip')]"
   },
   "resources": [
     {
+      "apiVersion": "[variables('apiVersionNetworkInterfaces')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(parameters('nameInfix'), '-nic')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[parameters('subnetRef')]"
+              },
+              "primary": true,
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpAddressName'))]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
+        }
+      }
+    },
+    {
       "apiVersion": "[variables('apiVersionVirtualMachine')]",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(parameters('nameInfix'),'p')]",
+      "name": "[parameters('nameInfix')]",
       "location": "[parameters('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', concat(parameters('nameInfix'), '-nic'))]"
+      ],
       "properties": {
         "hardwareProfile": {
           "vmSize": "[parameters('vmSize')]"
@@ -139,7 +133,7 @@
         "osProfile": {
           "computerName": "[parameters('dnsName')]",
           "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]",
+          "adminPassword": "[parameters('adminPasswordOrKey')]",
           "linuxConfiguration": "[if(equals(parameters('authType'), 'password'), json('null'), variables('linuxConfiguration'))]"
         },
         "storageProfile": {
@@ -154,7 +148,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('nicName')))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('nameInfix'), '-nic'))]"
             }
           ]
         }

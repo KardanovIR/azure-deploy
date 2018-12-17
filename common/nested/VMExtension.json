@@ -23,6 +23,18 @@
     "fqdn": {
       "type": "string"
     },
+    "dockerRepository": {
+      "type": "string"
+    },
+    "dockerLogin": {
+      "type": "string"
+    },
+    "dockerPassword": {
+      "type": "string"
+    },
+    "dockerImage": {
+      "type": "string"
+    },
     "wavesNetworkName": {
       "type": "string",
       "defaultValue": "MAINNET",
@@ -56,17 +68,12 @@
       ]
     },
     "wavesRestApiEnabled": {
-      "type": "string",
-      "defaultValue": "NO",
-      "allowedValues": [
-        "YES",
-        "NO"
-      ]
+      "type": "bool",
+      "defaultValue": false
     }
   },
   "variables": {
-    "apiVersionVirtualMachinesExtensions": "2018-06-01",
-    "dockerfile": "docker-compose.yml"
+    "apiVersionVirtualMachinesExtensions": "2018-06-01"
   },
   "resources": [
     {
@@ -81,11 +88,12 @@
         "autoUpgradeMinorVersion": true,
         "settings": {
           "fileUris": [
-            "[uri(parameters('artifactsLocationUrl'), concat('configure.sh', parameters('artifactsLocationUrlSasToken')))]"
+            "[uri(parameters('artifactsLocationUrl'), concat('scripts/config.sh', parameters('artifactsLocationUrlSasToken')))]",
+            "[uri(parameters('artifactsLocationUrl'), concat('scripts/docker-compose.yml', parameters('artifactsLocationUrlSasToken')))]"
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat('/bin/bash configure.sh \"', parameters('adminUsername'), '\" \"',parameters('artifactsLocationUrl'), '\" \"', parameters('fqdn'), '\" \"',parameters('wavesNetworkName'), '\" \"',parameters('wavesNodeName'), '\" \"',parameters('wavesWalletSeed'), '\" \"',parameters('wavesWalletPassword'), '\" \"',parameters('wavesLogLevel'), '\" \"',parameters('wavesRestApiEnabled'), '\"')]"
+          "commandToExecute": "[concat('/bin/bash config.sh \"', parameters('adminUsername'), '\" \"', parameters('artifactsLocationUrl'), '\" \"', parameters('artifactsLocationUrlSasToken'), '\" \"', parameters('fqdn'), '\" \"', parameters('dockerRepository'), '\" \"', parameters('dockerLogin'), '\" \"', parameters('dockerPassword'), '\" \"', parameters('dockerImage'), '\" \"', parameters('wavesNetworkName'), '\" \"', parameters('wavesNodeName'), '\" \"', parameters('wavesWalletSeed'), '\" \"', parameters('wavesWalletPassword'), '\" \"', parameters('wavesLogLevel'), '\" \"',parameters('wavesRestApiEnabled'), '\"')]"
         }
       }
     }

@@ -1,0 +1,22 @@
+version: "3.0"
+
+services:
+  node:
+    container_name: wavesnode
+    image: wavesplatform/node:latest
+    environment:
+      - WAVES__REST_API__ENABLE=yes
+      - WAVES__REST_API__BIND_ADDRESS=0.0.0.0
+      - WAVES_AUTODETECT_ADDRESS=yes
+      - WAVES_NETWORK=net1
+      - WAVES_NODE_NAME=node1
+      - WAVES_WALLET_SEED=000000000000000000000000000000000
+      - WAVES_WALLET_PASSWORD=P@ssw0rd123!
+      - WAVES_LOG_LEVEL=INFO
+    ports:
+      - "6868:6868"
+      - "6863:6863"
+      - "6869:6869"
+    restart: always
+    volumes:
+      - ./waves:/waves

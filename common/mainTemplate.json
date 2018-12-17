@@ -2,69 +2,12 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "vmName": {
+    "prefix": {
       "type": "string",
       "metadata": {
-        "description": "String used as the name for the virtual machine"
+        "description": "Prefix for naming of resources that will be deployed.  This should be less than 6 characters in length, including lower case alpha and numbers only."
       },
-      "maxLength": 15
-    },
-    "wavesNetworkName": {
-      "type": "string",
-      "allowedValues": [
-        "MAINNET",
-        "TESTNET"
-      ],
-      "metadata": {
-        "description": "Network of the node"
-      }
-    },
-    "wavesNodeName": {
-      "type": "string",
-      "defaultValue": "Node name",
-      "metadata": {
-        "description": "Node name to send during handshake. Keep empty the field to set random node name."
-      },
-      "maxLength": 100
-    },
-    "wavesWalletSeed": {
-      "type": "string",
-      "defaultValue": null,
-      "metadata": {
-        "description": "If this field is empty a phrase will be generated automatically"
-      }
-    },
-    "wavesWalletPassword": {
-      "type": "string",
-      "defaultValue": null,
-      "metadata": {
-        "description": "If this field is empty a password will be generated automatically"
-      }
-    },
-    "wavesRestApiEnabled": {
-      "type": "string",
-      "allowedValues": [
-        "YES",
-        "NO"
-      ],
-      "metadata": {
-        "description": "Port number for the REST API"
-      }
-    },
-    "wavesLogLevel": {
-      "type": "string",
-      "defaultValue": "DEBUG",
-      "allowedValues": [
-        "OFF",
-        "ERROR",
-        "WARN",
-        "INFO",
-        "DEBUG",
-        "TRACE"
-      ],
-      "metadata": {
-        "description": "Set the logging level of node"
-      }
+      "maxLength": 6
     },
     "authType": {
       "type": "string",
@@ -111,8 +54,62 @@
     "vmSize": {
       "type": "string",
       "defaultValue": "Standard_D4s_v3",
-      "metadata": {f
+      "metadata": {
         "description": "Size of the virtual machine"
+      }
+    },
+    "wavesNetworkName": {
+      "type": "string",
+      "defaultValue": "TESTNET",
+      "allowedValues": [
+        "MAINNET",
+        "TESTNET"
+      ],
+      "metadata": {
+        "description": "Network of the node"
+      }
+    },
+    "wavesNodeName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Node name to send during handshake. Keep empty the field to set random node name."
+      },
+      "maxLength": 100
+    },
+    "wavesWalletSeed": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "If this field is empty a phrase will be generated automatically"
+      }
+    },
+    "wavesWalletPassword": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "If this field is empty a password will be generated automatically"
+      }
+    },
+    "wavesRestApiEnabled": {
+      "type": "bool",
+      "metadata": {
+        "description": "Enable or disable the REST API"
+      }
+    },
+    "wavesLogLevel": {
+      "type": "string",
+      "defaultValue": "DEBUG",
+      "allowedValues": [
+        "OFF",
+        "ERROR",
+        "WARN",
+        "INFO",
+        "DEBUG",
+        "TRACE"
+      ],
+      "metadata": {
+        "description": "Set the logging level of node"
       }
     },
     "location": {
@@ -137,14 +134,12 @@
     }
   },
   "variables": {
-    "apiVersionDeployments": "2017-05-10",
-    "apiVersionVirtualMachines": "2017-03-30",
-    "apiVersionPublicIPAddresses": "2017-10-01",
-    "apiVersionNetworkSecurityGroups": "2017-10-01",
-    "apiVersionNetworkInterfaces": "2017-10-01",
-    "apiVersionVirtualNetworks": "2017-10-01",
-    "apiVersionStorageAccounts": "2018-02-01",
-    "nameInfix": "[toLower(substring(concat(parameters('vmName'), uniqueString(resourceGroup().id)), 0, 9))]",
+    "apiVersionDeployments": "2018-05-01",
+    "apiVersionPublicIPAddresses": "2018-08-01",
+    "apiVersionNetworkSecurityGroups": "2018-08-01",
+    "apiVersionVirtualNetworks": "2018-08-01",
+    "apiVersionStorage": "2018-07-01",
+    "nameInfix": "[toLower(substring(concat(parameters('prefix'), uniqueString(resourceGroup().id)), 0, 9))]",
     "dnsName": "[variables('nameInfix')]",
     "sshPort": 22,
     "subnetName": "[concat(variables('nameInfix'), 'subnet')]",
@@ -172,21 +167,26 @@
     },
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNet').name, variables('subnetName'))]",
     "adminPasswordOrKey": "[if(equals(parameters('authType'), 'password'), parameters('adminPassword'), parameters('adminSSHKey'))]",
-    "wavesSeedPhrase": "[coalesce(parameters('wavesWalletSeed'), concat('S', uniqueString(resourceGroup().id, subscription().subscriptionId), uniqueString(deployment().name), 'x', '!'))]",
-    "wavesWalletPassword": "[coalesce(parameters('wavesWalletPassword'), concat('El', uniqueString(subscription().subscriptionId, resourceGroup().id), 'ena', '$!'))]"
+    "dockerRepository": "http://hub.docker.com",
+    "dockerLogin": "",
+    "dockerPassword": "",
+    "dockerImageWavesPublicNode": "wavesplatform/node:latest",
+    "wavesSeedPhrase": "[if(equals(parameters('wavesWalletSeed'), ''), concat('S', uniqueString(resourceGroup().id, subscription().subscriptionId), uniqueString(deployment().name), 'x', '!'), parameters('wavesWalletSeed'))]", 
+    "wavesWalletPassword": "[coalesce(parameters('wavesWalletPassword'), concat('El', uniqueString(subscription().subscriptionId, resourceGroup().id), 'ena', '$!'))]",
+    "publicTrackingGuid": "e71c6d46-de87-59a7-a21d-54100edf0178"
   },
   "resources": [
     {
-      "apiVersion": "2018-02-01",
-      "name": "pid-dd63bc43-d6ba-535b-b726-3e1e0950f93c",
+      "apiVersion": "[variables('apiVersionDeployments')]",
+      "name": "[concat('pid-', variables('publicTrackingGuid'))]",
       "type": "Microsoft.Resources/deployments",
       "properties": {
-        "mode": "Incremental",
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "resources": []
-        }
+          "mode": "Incremental",
+          "template": {
+              "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+              "contentVersion": "1.0.0.0",
+              "resources": []
+          }
       }
     },
     {
@@ -198,36 +198,6 @@
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
           "domainNameLabel": "[variables('dnsName')]"
-        }
-      }
-    },
-    {
-      "apiVersion": "[variables('apiVersionNetworkInterfaces')]",
-      "type": "Microsoft.Network/networkInterfaces",
-      "name": "[variables('nicName')]",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/', variables('vNet').name)]",
-        "[concat('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]",
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
-      ],
-      "properties": {
-        "ipConfigurations": [
-          {
-            "name": "ipconfig1",
-            "properties": {
-              "privateIPAllocationMethod": "Dynamic",
-              "subnet": {
-                "id": "[variables('subnetRef')]"
-              },
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpAddressName'))]"
-              }
-            }
-          }
-        ],
-        "networkSecurityGroup": {
-          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
         }
       }
     },
@@ -274,33 +244,21 @@
     },
     {
       "apiVersion": "[variables('apiVersionDeployments')]",
-      "name": "vmLinkedTemplate",
+      "name": "wavesNode",
       "type": "Microsoft.Resources/deployments",
       "dependsOn": [
         "[concat('Microsoft.Network/virtualNetworks/', variables('vNet').name)]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgName'))]"
       ],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[uri(parameters('_artifactsLocation'), concat('VM.json', parameters('_artifactsLocationSasToken')))]",
+          "uri": "[uri(parameters('_artifactsLocation'), concat('nested/VM.json', parameters('_artifactsLocationSasToken')))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
           "authType": {
             "value": "[parameters('authType')]"
-          },
-          "apiVersionVirtualMachines": {
-            "value": "[variables('apiVersionVirtualMachines')]"
-          },
-          "storagePerformance": {
-            "value": "[parameters('vmStoragePerformance')]"
-          },
-          "nicName": {
-            "value": "[variables('nicName')]"
-          },
-          "vmSize": {
-            "value": "[parameters('vmSize')]"
           },
           "adminUsername": {
             "value": "[parameters('adminUsername')]"
@@ -308,17 +266,23 @@
           "adminPasswordOrKey": {
             "value": "[variables('adminPasswordOrKey')]"
           },
-          "adminPassword": {
-            "value": "[parameters('adminPassword')]"
+          "vmSize": {
+            "value": "[parameters('vmSize')]"
           },
-          "adminSSHKey": {
-            "value": "[parameters('adminSSHKey')]"
+          "storagePerformance": {
+            "value": "[parameters('vmStoragePerformance')]"
+          },
+          "subnetRef": {
+            "value": "[variables('subnetRef')]"
           },
           "ubuntuImage": {
             "value": "[variables('ubuntuImage')]"
           },
           "dnsName": {
             "value": "[variables('dnsName')]"
+          },
+          "nsgName": {
+            "value": "[variables('nsgName')]"
           },
           "nameInfix": {
             "value": "[variables('nameInfix')]"
@@ -334,12 +298,12 @@
       "name": "vmExtensionLinkedTemplate",
       "type": "Microsoft.Resources/deployments",
       "dependsOn": [
-        "vmLinkedTemplate"
+        "wavesNode"
       ],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[uri(parameters('_artifactsLocation'), concat('VMExtension.json', parameters('_artifactsLocationSasToken')))]",
+          "uri": "[uri(parameters('_artifactsLocation'), concat('nested/VMExtension.json', parameters('_artifactsLocationSasToken')))]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -364,11 +328,35 @@
           "fqdn": {
             "value": "[reference(concat('Microsoft.Network/publicIPAddresses/', variables('publicIpAddressName')), variables('apiVersionPublicIPAddresses')).dnsSettings.fqdn]"
           },
-          "walletPassword": {
+          "dockerRepository": {
+						"value": "[variables('dockerRepository')]"
+					},
+          "dockerLogin": {
+            "value": "[variables('dockerLogin')]"
+          },
+          "dockerPassword": {
+            "value": "[variables('dockerPassword')]"
+          },
+          "dockerImage": {
+            "value": "[variables('dockerImageWavesPublicNode')]"
+          },
+          "wavesNetworkName": {
+            "value": "[parameters('wavesNetworkName')]"
+          },
+          "wavesNodeName": {
+            "value": "[parameters('wavesNodeNode')"
+          },
+          "wavesWalletSeed": {
+            "value": "[parameters('wavesWalletSeed')]"
+          },
+          "waveswalletPassword": {
             "value": "[parameters('wavesWalletPassword')]"
           },
-          "networkType": {
-            "value": "[parameters('wavesNetworkName')]"
+          "wavesLogLevel": {
+            "value": "[parameters('wavesLogLevel')]"
+          },
+          "wavesRestApiEnabled": {
+            "value": "[parameters('wavesRestApiEnabled')]"
           }
         }
       }
@@ -378,14 +366,6 @@
     "dnsName": {
       "type": "string",
       "value": "[reference(variables('publicIpAddressName')).dnsSettings.fqdn]"
-    },
-    "wavesSeedPhrase": {
-      "type": "string",
-      "value": "[parameters('wavesWalletSeed')]"
-    },
-    "wavesWalletPassword": {
-      "type": "string",
-      "value": "[parameters('wavesWalletPassword')]"
     }
   }
 }

@@ -236,20 +236,20 @@
       }
     ],
     "outputs": {
-      "vmName": "[basics('name')]",
+      "prefix": "[basics('name')]",
       "authType": "[basics('adminCredentials').authenticationType]",
       "adminUsername": "[basics('username')]",
       "adminPassword": "[basics('adminCredentials').password]",
       "adminSSHKey": "[basics('adminCredentials').sshPublicKey]",
       "vmStoragePerformance": "[basics('vmstorageperf')]",
       "vmSize": "[steps('Size').vmSize]",
-      "location": "[location()]",
       "wavesNetworkName": "[steps('wavesConfigs').wavesNetworkName]",
       "wavesNodeName": "[steps('wavesConfigs').wavesNodeName]",
       "wavesWalletSeed": "[steps('wavesConfigs').wavesWalletSeed]",
       "wavesWalletPassword": "[steps('wavesConfigs').wavesWalletPassword]",
+      "wavesRestApiEnabled": "[steps('wavesConfigs').wavesRestApiEnabled]",
       "wavesLogLevel": "[steps('wavesConfigs').wavesLogLevel]",
-      "wavesRestApiEnabled": "[steps('wavesConfigs').wavesRestApiEnabled]"
+      "location": "[location()]"
     }
   }
 }
