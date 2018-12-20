@@ -93,6 +93,7 @@
     },
     "wavesRestApiEnabled": {
       "type": "string",
+      "defaultValue": "NO",
       "metadata": {
         "description": "Enable or disable the REST API"
       }

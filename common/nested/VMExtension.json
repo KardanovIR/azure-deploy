@@ -68,8 +68,8 @@
       ]
     },
     "wavesRestApiEnabled": {
-      "type": "bool",
-      "defaultValue": false
+      "type": "string",
+      "defaultValue": "NO"
     }
   },
   "variables": {
