@@ -28,7 +28,7 @@
               "value": "Premium"
             },
             {
-              "label": "Standard HDD",
+              "label": "Standard SSD",
               "value": "Standard"
             }
           ]
@@ -38,7 +38,6 @@
         "name": "username",
         "type": "Microsoft.Compute.UserNameTextBox",
         "label": "VM user name",
-        "defaultValue": "wavesadmin",
         "toolTip": "Admin username for all of the deployed virtual machines.",
         "osPlatform": "Linux",
         "constraints": {
@@ -171,7 +170,7 @@
             },
             "toolTip": "If this field is empty a password will be generated automatically",
             "constraints": {
-              "required": false
+              "required": true
             },
             "visible": true
           },

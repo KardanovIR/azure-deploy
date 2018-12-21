@@ -21,7 +21,6 @@
     },
     "adminUsername": {
       "type": "string",
-      "defaultValue": "wavesadmin",
       "metadata": {
         "description": "Administrator username of each deployed VM (alphanumeric characters only)"
       }
@@ -53,7 +52,7 @@
     },
     "vmSize": {
       "type": "string",
-      "defaultValue": "Standard_D4s_v3",
+      "defaultValue": "Standard_D2s_v3",
       "metadata": {
         "description": "Size of the virtual machine"
       }
@@ -78,15 +77,14 @@
       "maxLength": 100
     },
     "wavesWalletSeed": {
-      "type": "string",
+      "type": "securestring",
       "defaultValue": "",
       "metadata": {
         "description": "If this field is empty a phrase will be generated automatically"
       }
     },
     "wavesWalletPassword": {
-      "type": "string",
-      "defaultValue": "",
+      "type": "securestring",
       "metadata": {
         "description": "If this field is empty a password will be generated automatically"
       }
@@ -345,7 +343,7 @@
             "value": "[parameters('wavesNetworkName')]"
           },
           "wavesNodeName": {
-            "value": "[parameters('wavesNodeNode')"
+            "value": "[parameters('wavesNodeName')]"
           },
           "wavesWalletSeed": {
             "value": "[parameters('wavesWalletSeed')]"

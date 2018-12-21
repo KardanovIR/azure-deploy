@@ -30,7 +30,7 @@
       "type": "string"
     },
     "dockerPassword": {
-      "type": "string"
+      "type": "securestring"
     },
     "dockerImage": {
       "type": "string"
@@ -48,11 +48,11 @@
       "defaultValue": null
     },
     "wavesWalletSeed": {
-      "type": "string",
+      "type": "securestring",
       "defaultValue": null
     },
     "wavesWalletPassword": {
-      "type": "string",
+      "type": "securestring",
       "defaultValue": null
     },
     "wavesLogLevel": {
